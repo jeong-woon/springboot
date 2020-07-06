@@ -24,3 +24,14 @@
                       .sources(AppApplication.class)
                       .run(args);
 4) 배너를 끌때 - > setBannerMode(Banner.Mode.OFF);
+
+## 리스너 등록방법
+- 리스너 파일 생성(AppSampleListener.java)
+    * implements ApplicationListener<???> => ???에 어떤 유형의 이벤트인지 명시해줘야한다.
+        ex) public class AppSampleListener implements ApplicationListener<ApplicationStartedEvent> {
+1) 어플리케이션 컨텍스트 동작하기 전에 발생하는 이벤트(ex : ApplicationStartingEvent)
+    * 빈으로 등록(@Component)할 필요 없다.
+    * 메인 메서드에서 등록해줘야 한다.
+       +  app.addListeners(new AppSampleListener());
+2) 어플리케이션 컨텍스트 동작한 후에 발생하는 이벤트(ex : ApplicationStartedEvent)
+    * 빈으로 등록(@Component)해야 한다.
