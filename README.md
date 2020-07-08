@@ -57,7 +57,48 @@
     * @order(숫자) 어노테이션을 활용해 여러개의 러너중 우선순위 설정 가능
 
 ## 외부설정
-    * 어플리케이션에서 사용하는 여러가지 설정값을 어플리케이션의 밖 또는 안에 정의할수 있는 기능
-    * 보통 설정파일은 application.propertis -> 이건 규약임.
-    * key = value 형태
-    * 가져다 쓰는 방법은
+* 어플리케이션에서 사용하는 여러가지 설정값을 어플리케이션의 밖 또는 안에 정의할수 있는 기능
+* 보통 설정파일은 application.propertis -> 이건 스프링부트 규약, 컨벤션임.
+* key = value 형태로 저장 (jw.name=jeong-woon)
+* 기본적인 가져다 쓰는 방법은 AppProperties.java 파일에 @Value 어노테이션을 이용한 방법과 같음.
+* 위의 방식은 우선순위로 따지면 15번째 정도 됨.
+* test/resources 폴더 생성후 프로젝트 모듈세팅에서 해당 폴더를 test resources 로 지정해주면 테스트시 그 디렉토리의 설정 읽을수 있는 것 같음
+* test에 만약 application.properties로 똑같은 이름의 설정 파일이 있는 경우
+    - 패키징 한다고 했을때 main 아래 있는것들 먼저 패키징하고, 그 다음에 test 밑에 있는것 패키징 하는데 이때 같은 이름이라 덮어씌워짐
+    - 만약 두 파일이 서로 다르다면 에러가 날수 있다.
+    - 근데 맨날 두 파일의 변수를 맞춰줄수는 없는데?
+        - 이때는 test/resources 아래 application.properties 파일을 지워버리자.
+        - 만약 테스트에서 쓸 프로퍼티가 필요하면 우선순위 2, 3번을 활용해서 각 변수 혹은 파일단위로 따로 관리해주자.
+* ide에서 앱 실행시는 main 아래것만 컴파일하고, test 실행시에는 test 아래것만 컴파일 한다. 위의 이슈는 패키징할때 발생하는 것임.
+   
+    ### 프로퍼티 우선순위 (우선순위에)
+    1. 유저 홈 디렉토리에 있는 spring-boot-dev-tools.properties
+    2. 테스트에 있는 @TestPropertySource
+        * @TestPropertySource(properties="jw.name=kjw") 직접 값 설정 가능
+        * @TestPropertySource(properties={"jw.name=kjw", "..."}) 값 여러개 설정 가능
+        * @TestPropertySource(location=classpath:/) 너무 변수가 많다면 파일 단위로 관리(test.properties 등의 이름으로 가능)
+    3. @SpringBootTest 애노테이션의 properties 애트리뷰트
+        * @SpringBootTest(properties="jw.name=kjw")
+    4. 커맨드 라인 아규먼트
+        * java -jar target/???.jar --jw.name=kjw
+    5. SPRING_APPLICATION_JSON (환경 변수 또는 시스템 프로티) 에 들어있는 프로퍼티
+    6. ServletConfig 파라미터
+    7. ServletContext 파라미터
+    8. java:comp/env JNDI 애트리뷰트
+    9. System.getProperties() 자바 시스템 프로퍼티
+    10. OS 환경 변수
+    11. RandomValuePropertySource
+    12. JAR 밖에 있는 특정 프로파일용 application properties
+    13. JAR 안에 있는 특정 프로파일용 application properties
+    14. JAR 밖에 있는 application properties
+    15. JAR 안에 있는 application properties
+    16. @PropertySource
+    17. 기본 프로퍼티 (SpringApplication.setDefaultProperties)
+    
+    ### application.properties 파일 자체의 위치 인식 우선 순위 (높은게 낮은걸 덮어 씁니다.)
+    1. file:./config/       프로젝트 루트에 config 폴더 만들고 그 아래
+    2. file:./              프로젝트 루트에
+    3. classpath:/config/   리소스 밑에 config 폴더 만들고 그 아래
+    4. classpath:/          원래 위치
+    
+    
