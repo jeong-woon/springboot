@@ -4,13 +4,25 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 
 import java.io.PrintStream;
 
 @SpringBootApplication
 public class AppApplication {
+
+    // jar 파일 안에 있는 어떤 설정값을 변경할 때 쓸 수 있는 방법
+    // 흔한 경우는 아닌것 같음.
+    // 기본적으로 빈으로 주입되서 사용 가능함. 거의 application.properties에서 =
+//    @ConfigurationProperties("server")
+//    @Bean
+//    public ServerProperties serverProperties(){
+//        return new ServerProperties();
+//    }
 
     public static void main(String[] args) {
         // SpringApplication.run(AppApplication.class, args); 이렇게 쓰면 커스터마이징 불가함.

@@ -101,4 +101,30 @@
     3. classpath:/config/   리소스 밑에 config 폴더 만들고 그 아래
     4. classpath:/          원래 위치
     
+* 프로퍼티(외부설정)이 어~~~엄청 많을때 하나의 빈으로 등록하는 방법이 있음(JwProperties.java)
+    1. @ConfigurationProperties("???") -> 이 클래스가 어떤 프로퍼티를 관리하는지 키 값을 주면된다. (프로퍼티에 jw.~~ 하면 jw가 키값임.)
+        * 어노테이션 프로세서가 없다고 뜨는데, 자동완성이 메타정보를 기반으로 생기는건데, 메타정보를 생성해주는 의존성 추가
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-configuration-processor</artifactId>
+                <optional>true</optional>
+            </dependency>
+            이렇게 해주면 @ConfigurationProperties 붙어있는 애들은 메타정보 생성되서 application.properties에서 자동완성 사용 가능
+  
+    2. 빈으로 생성해주기
+        * 원래는 메인클래스(AppApplication.java)에 @EnableConfigurationProperties(JwProperties.class)명시해줬는데 자동으로 기본 등록됨 우리가 해야할 일은
+           JwProperties에 @Component 추가하는것.
+        * 이렇게 해주면 기존에 @Value로 프로퍼티의 값을 가져오던 것을 아래와 같이 바꿀수 있음
+           @Autowired
+           private JwProperties jwProperties
+           ...
+           jwProperties.getName()
+           
+           되도록이면 위와 같이 쓰는게 좋다
     
+    3. 프로퍼티 값 검증(JwProperties.class)
+        * @Validated 어노테이션 추가 (하이버네이트 벨리데이터, JSR-303구현체임)
+        * @Not empty, @Size(min=1, max=30) 등등 사용 가능
+
+## 프로파일
+    1. 
