@@ -127,4 +127,20 @@
         * @Not empty, @Size(min=1, max=30) 등등 사용 가능
 
 ## 프로파일
-    1. 
+* 스프링 프레임워크에서 지원하는 기능, 특정한 프로파일에서만 애플리케이션의 동작을 달리하거나, 빈을 다르게 등록하고 싶을때 씀.
+1. com > springboot > app > config 디렉토리 생성
+2. BaseConfiguration, TestConfiguration 파일 생성
+3. @Profile("prod"), @Profile("test")로 지정.
+    - 각 파일은 프로파일이 prod, test 일때만 작동함. 이 아래로 설정된 빈들 또한 각 프로파일이 일치 할때만 등록됨.
+4. ConfigRunner 만들고 hello 빈 가져오면 에러남. 왜? 이런 타입의 빈이 없으니까.
+5. Application.properties 파일에 spring.profiles.active=prod 설정해줌. 그다음 실행시 에러 안남.
+    - spring.profiles.active=prod 이 부분이 프로파일 지정하는 부분
+6. 결국 spring.profiles.active 이 설정도 Application.properties 안에 있다는 것은 이것도 프로퍼티임.
+    - 프로퍼티의 우선순위의 영향을 다 받음
+    - java -jar target/....jar --spring.profiles.active=prod 로 실행하면 프로퍼티 파일 안에서 설정한것 을 덮어쓸 수 있다.
+7. 프로파일용 프로퍼티 추가
+    - spring.profiles.active에서 정해진 값에 따라서 다른 프로퍼티 파일을 참조할 수 있음.
+    - 기본 Application.properties 파일보다 프로파일용 프로퍼티가 우선순위 높음. 덮어씀.
+    - application-{profile}.properties
+8. spring.profiles.include
+    - 이 설정이 읽히면 여기 해당하는 프로파일을 활성화 하라는 뜻임.
