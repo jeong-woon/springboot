@@ -144,3 +144,52 @@
     - application-{profile}.properties
 8. spring.profiles.include
     - 이 설정이 읽히면 여기 해당하는 프로파일을 활성화 하라는 뜻임.
+    
+
+## 로깅
+1. 로깅 퍼사드 vs 로거
+    * 로깅 퍼사드는 사실 로그를 찍는 애가 아님(commons-logging, slf4j)
+    * jul, log4j2, logback 이런게 로거임.
+    * 로깅 퍼사드는 로거 api를 추상화 해둔 인터페이스 임.
+    * 로깅 퍼사드를 통해서 로거를 쓰면 장점은 로거를 쉽게 바꿔낄수 있게 해준다는 것.
+    * 스프링은 커먼스 로깅 씀. 코어 개발할때 slf4j 없었음.
+    * 우리가 만든 앱에서 로그는 누가찍는거냐? logback이 찍는다는게 정답임.
+        - 커먼스 로깅을 쓰든, slf4j든 써도 상관없음. 어차피 slf4j 통해서 logback이 찍는다. 
+        - logback이 slf4j의 구현체이다.
+    * debug로 찍으면 전부다 디버그로 나오는건 아니고, embeded container, 하이버네이트, 스프링 부트까지 일부 핵심 라이브러리로 찍어줌
+    * 전부다 debug 하고 싶으면 --trace로 해주면 됨.
+    * 로그 컬러 출력 프로퍼티 : spring.output.ansi.enabled=always 하면 컬러출력됨.
+    * 로그 파일 출력은 logging.file 또는 logging.path 설정으로 가능함.
+    * 로그 레벨 조정: logging.level.패지키 = 로그 레벨
+        - logging.level.com.springboot.app = DEBUG
+        - 로거를 쓸 파일에서
+            private Logger logger = LoggerFactory.getLogger(ConfigRunner.class);
+            ...
+            logger.debug("============================");
+            logger.debug("bean : " + hello);
+            logger.debug("============================");
+            이런 형태로 쓴다.
+        - 일반 패키지 뿐만 아니라 org.springframework 이런식으로 스프링이 찍는 로거도 조절 가능.
+2. 커스텀 로그 파일 추가
+    - 클래스패스에 아래 파일 중 하나 추가
+    * Logback: logback-spring.xml(추천)/logback.xml은 너무빨리 로딩되서 커스터마이징이 불가능
+    * Log4J2: log4j2-spring.xml
+    * JUL (비추): logging.properties
+3. log4j2로 로거 변경
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        <!-- 여기서 logback 제거해주고 -->
+        <exclusions>
+            <exclusion>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-logging</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    
+    <!-- 여기서 log4j2 넣어준다. -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-log4j2</artifactId>
+    </dependency>
