@@ -193,3 +193,25 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-log4j2</artifactId>
     </dependency>
+
+## 테스트
+1. 가장 먼저 의존성 확인
+    * <!-- 테스트를 위한 의존성, 스코프 test! -->
+      <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-test</artifactId>
+          <scope>test</scope>
+      </dependency>
+     * 위의 의존성을 추가하면 뭐가 들어올까?
+        - junit, jsonpath(assertion 할수 있는거?), 모키토(목업?), 스프링 테스트, 셀레니움 들어옴.
+        - 테스트 파일 생성 => 컨트롤러 에서 ctrl + shift + t
+        - 테스트 파일에 
+            @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.MOCK)
+                1) webEnvironment = MOCK(기본): mock servlet environment. 내장 톰캣 구동 안 함.
+                    + 서블릿 컨테이너를 테스트 용으로 띄우지 않고, 목업을 해서 실험은 할 수 있다.
+                    + 목업된 서블릿에 인터랙션을 위해서는 MockMvc라는 클라이언트를 꼭! 사용해야한다.(SampleTestControllerTest.java) 
+                    @AutoConfigureMockMvc, @Autowired MockMvc mockMvc;
+                    
+                2) webEnvironment = RANDON_PORT, DEFINED_PORT: 내장 톰캣 사용 함.
+                3) webEnvironment = NONE: 서블릿 환경 제공 안 함.
+            @RunWith(SpringRunner.class) 추가

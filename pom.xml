@@ -27,6 +27,12 @@
             </exclusions>-->
         </dependency>
 
+        <!-- webTestClient 사용하기 위해서 의존성 추가 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
         <!-- 여기서 log4j2 넣어줌 -->
         <!--
             <dependency>
@@ -34,12 +40,14 @@
             <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
         -->
+        <!-- 테스트를 위한 의존성, 스코프 test! -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
+        <!-- 메타데이터 생성 의존성 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
