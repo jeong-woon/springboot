@@ -62,7 +62,7 @@ public class SampleTestControllerTest {
 
         when(mockSampleTestService.getName()).thenReturn("jw");
 
-        webTestClient.get().uri("/hello").exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("hello jw");
+        webTestClient.get().uri("/helloTest").exchange().expectStatus().isOk().expectBody(String.class).isEqualTo("hello jw");
     }
 
 }

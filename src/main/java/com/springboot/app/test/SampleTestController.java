@@ -10,7 +10,7 @@ public class SampleTestController {
     @Autowired
     private SampleTestService sampleTestService;
 
-    @GetMapping("/hello")
+    @GetMapping("/helloTest")
     public String hello(){
         return "hello "+sampleTestService.getName();
     }

@@ -208,10 +208,103 @@
         - 테스트 파일에 
             @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.MOCK)
                 1) webEnvironment = MOCK(기본): mock servlet environment. 내장 톰캣 구동 안 함.
-                    + 서블릿 컨테이너를 테스트 용으로 띄우지 않고, 목업을 해서 실험은 할 수 있다.
-                    + 목업된 서블릿에 인터랙션을 위해서는 MockMvc라는 클라이언트를 꼭! 사용해야한다.(SampleTestControllerTest.java) 
-                    @AutoConfigureMockMvc, @Autowired MockMvc mockMvc;
-                    
-                2) webEnvironment = RANDON_PORT, DEFINED_PORT: 내장 톰캣 사용 함.
+                    * 서블릿 컨테이너를 테스트 용으로 띄우지 않고, 목업을 해서 실험은 할 수 있다.
+                    * 목업된 서블릿에 인터랙션을 위해서는 MockMvc라는 클라이언트를 꼭! 사용해야한다.(SampleTestControllerTest.java) 
+                    @AutoConfigureMockMvc, @Autowired MockMvc mockMvc; > 이 방법이 가장 쉬움. 
+                2) webEnvironment = RANDOM_PORT(추천), DEFINED_PORT: 내장 톰캣 사용 함.
+                    * 레스트 템플릿, 테스트용 레스트 템플릿, 테스트용 웹 클라이언트를 써야함.
+                    * 레스트 템플릿 -> @Autowired private TestRestTemplate testRestTemplate 주입받음.
+                    * 아무 어노테이션 추가 안함.
+                    * WebTestClient -> 스프링 웹플럭스 의존성 추가해야함.
+                      비동기 요청 가능.
+                      
                 3) webEnvironment = NONE: 서블릿 환경 제공 안 함.
             @RunWith(SpringRunner.class) 추가
+            
+            - 컨트롤러만 테스트 하고 싶다? 서비스를 아예 목킹시켜서 임의로 조작 가능
+            @MockBean
+            private SampleTestService mockSampleService 
+            when(mockSampleService.getName()).thenReturn("jw");
+            
+            @MockBean은 ApplicationContext에 들어있는 빈을 Mock으로 만든 객체로 교체 함.
+            모든 @Test 마다 자동으로 리셋.
+            
+            슬라이스 테스트
+            사실, @SpringBootTest는 통합 테스트임. @SpringBootApplication 찾아서 모든 객체 다등록함. 이게 싫다?
+            레이어 별로 잘라서 테스트하고 싶을 때 @SpringBootTest을 아래 어노테이션으로 교체
+            @JsonTest
+            
+            @Autowired JacksonTester<도메인객체> 받아서 테스트 
+            
+            @WebMvcTest(테스트할 컨트롤러 클래스) -> 웹 관련애들만 빈으로 등록됨. 서비스 이런거 등록안됨. 목킹해줘야함. + MockMvc
+            @WebFluxTest
+            @DataJpaTest
+## 스프링MVC
+1. src>test>java>com>springboot>app>user 패키지 생성
+2. UserControllerTest 생성
+3. src>main>java>com>springboot>app>user 패키지 아래 UserController 파일 생성
+4. 코드를 완성하고 실행하면 테스트 성공!
+이렇게 아무 설정 없이 스프링 웹 mvc 개발을 시작할수 있는데,
+이는 스프링 부트가 제공해주는 기본설정떄문이다. 
+spring-boot-autoconfigure 라는 모듈에 spring-factories에 보면 webMvcAutoConfiguration 클래스가 존재.
+이 자동설정 파일이 적용되었기 때문에 아무런 설정 없이 mvc 사용 가능.
+5. 스프링 웹 MVC 기능 확장
+    config 패키지 생성(정리차원?)
+    WebConfig 클래스 생성 파일에서 확인
+
+## HttpMessageConverters
+* 스프링 프레임워크에서 제공하는 인터페이스, mvc의 일부분임.
+* HTTP 요청 본문으로 들어오는것을 객체로 변경, 객체를 HTTP 응답 본문으로 변경할때 사용.
+* @RequestBody(요청본문), @ResponseBody(응답본문)와 사용함.
+* 요청, 응답에 따라서 사용되는 메세지 컨버터가 달리진다.
+    - json 요청에 json 본문이 들어오면 제이슨메세지컨버터 사용해서 User 객체로 바꿈.
+    - 요청에는 contentType이라는 헤더가 있음.
+    - 객체를 리턴할때도 객체 자체를 리스폰스에 담을수 없다. Http는 다 문자임.
+    - 기본적으로 컴포지션 타입의 경우(자바빈처럼 이런저런 프로퍼티, 게터세터 가지는걸 말하는듯) 제이슨 컨버터가 사용됨.
+    - 그렇지 않고 문자열, int의 경우(toString 가능한 경우?) 스트링메세지컨터버 사용됨.
+    - 만약 컨트롤러가 @RestController 일 경우 @ResponseBody 어노테이션 생략 가능.
+    - 그냥 컨트롤러를 쓸 경우 @ResponseBody를 꼭 사용해야 메세지 컨버터가 적용된다.
+    - 그냥 컨트롤러를 쓰면서 @ResponseBody를 쓰지 않으면. 뷰네임리졸버, 빈네임뷰리졸버를 사용해서 이 이름에 해당하는 뷰를 찾으려고 시도함.
+* 메세지 컨버터를 사용할려면 컴포지션 객체를 활용해봐야함.(User),
+
+## ContentNegotiatingViewResolver
+* ViewResolver중의 하나
+* 들어오는 요청의 accept 헤더에 따라, 다시 말해 브라우저 또는 클라이언트가 어떤 타입의 응답을 원한다고 서버에 알려주는 것에 따라 응답이 달라짐.
+* 어떤 요청이 들어오면 그 요청에 응답을 만들수 있는 모든 뷰를 찾고, 최종적으로 억셉트 헤더랑 뷰의 타입을 비교해서 선택을 함. 클라이언트가 이 뷰를 원했을꺼야!
+* 가장 좋은 정보는 accept 헤더임. 그치만 경우에 따라서 이 헤더를 제공하지 않는 요청들도 많다. 매개변수 format 사용함.(/path?format=xml) 이런것도 사용함.
+* 요청은 json으로 보내고 xml로 받는 테스트(createUser_XML) 확인 => 컨트롤러(핸들러)코드를 바꾸지 않았는데, 응답 본문이 xml로 변경됨.
+* 만약 org.springframework.web.HttpMediaTypeNotAcceptableException 에러가 발생한다면, 처리할 컨버터가 없다는 의미 
+    - HttpMessageConvertersAutoConfiguration 파일에서 JacksonHttpMessageConvertersConfiguration 파일을 보면 @ConditionalOnClass({XmlMapper.class}) xml 매퍼가 있을때만 빈으로 등록해주는 설정 있음.
+    - 따라서 아래 의존성 추가(xml 매퍼 추가)
+    - <dependency>
+          <groupId>com.fasterxml.jackson.dataformat</groupId>
+          <artifactId>jackson-dataformat-xml</artifactId>
+          <version>2.9.6</version>
+      </dependency>
+
+## 정적 리소스
+* 동적으로 생성하지 않은, 이미 생성된 리소스를 그대로 반환
+* 정적 리소스 맵핑 “/**”=> 아래 기본 리소스위치를 가리킴
+* 기본 리소스 위치
+    1) classpath:/static
+    2) classpath:/public
+    3) classpath:/resources/
+    4) classpath:/META-INF/resources
+    - 위 네개의 위치는 기본으로 맵핑 되어 있기때문에 별도의 패스를 적어주지 않는다. /static, /public 와 같은 경로 적지 않음.
+        + 예) “/hello.html” => /static/hello.html
+    - 요청을 처리하는 녀석은 ResourceHttpRequestHandler가 한다. 재미있는것은 헤더정보에 last-modified라는 정보를 보고 304를 줄 때가 있음.
+    리소스 자체를 다시 보내주지는 않을때도 있음.
+    - 만약 파일을 수정하면 요청 헤더에 if-modified-since라는 헤더가 있고, 응답정보에 last-modified 가 있는데, 응답에 마지막 수정시간이 요청헤더에 마지막 수정시간보다 최근이면 200 즉 리소스를 다시 보내고 아니면 304 캐쉬정책을 씀.
+* 정적리소스 맵핑 패턴 변경
+    - application.properties에 spring.mvc.static-path-pattern=/static/** 형태로 바꿔주면 된다.
+    - 이렇게 설정하면 static로 요청을 해야함. (/static/hello.html)
+* 정적리소스 위치 변경
+    - application.properties에 spring.mvc.static-location 프로퍼티 사용.
+    - 이 프로퍼티는 위의 기본 경로 4가지를 전부 못쓰게 되니 권장하지 않음.
+    - 추천하는 방법은 WebConfig 파일안에 아래 형태로 재정의 하는것. 위 4가지 기본 경로 사용가능 거기에 추가하는 것. 
+        + @Override
+          public void addResourceHandlers(ResourceHandlerRegistry registry) {
+              registry.addResourceHandler("/m/**") //디렉토리 추가
+                      .addResourceLocations("classpath:/m/")  // 반드시! '/' 로 끝나야함! 이렇게 안하면 맵핑이 잘 안됨!
+                      .setCachePeriod(20);    // 여기서 추가하는 핸들러는 캐시 정책이 안들어가기때문에 직접 설정해줘야함.
+          }
